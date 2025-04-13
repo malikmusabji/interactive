@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classcheck.in - Interactive Orbit</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            background-color: #f0f4ff;
+            color: #4f46e5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .feature-orbit-container {
+            position: relative;
+            width: 450px;
+            height: 450px;
+            margin: 50px auto;
+        }
+
+        .feature-orbit-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            border: 3px solid #4f46e5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #4f46e5;
+            background-color: rgba(255, 255, 255, 0.6);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.2), 0 0 0 5px rgba(79, 70, 229, 0.05);
+            cursor: default;
+            z-index: 10;
+            padding: 15px;
+        }
+
+        .feature-orbit-center-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            line-height: 1.2;
+            margin-bottom: 5px;
+        }
+
+        .feature-orbit-subtitle {
+            font-size: 0.8rem;
+            color: #6366f1;
+            line-height: 1.3;
+        }
+
+        .feature-orbit-item {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.7);
+            transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out, opacity 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(79, 70, 229, 0.2);
+            backdrop-filter: blur(5px);
+            transform-origin: center center;
+            will-change: transform;
+            z-index: 5; /* Ensure main icons are above small ones */
+        }
+
+        .feature-orbit-container.is-hovering .feature-orbit-item:not(.hover-target) {
+             opacity: 0.6;
+        }
+
+        .feature-orbit-item.hover-target {
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 8px 16px rgba(79, 70, 229, 0.25);
+            border-color: #4f46e5;
+            z-index: 6; /* Bring hovered main icon forward */
+            opacity: 1;
+        }
+
+        .feature-orbit-icon {
+            width: 35px;
+            height: 35px;
+        }
+
+        .feature-orbit-item.active {
+            background-color: #10b981;
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.8), 0 0 10px rgba(255, 255, 255, 0.5) inset;
+            border-color: #6ee7b7;
+        }
+
+        /* Small interactive icons */
+        .small-icon {
+            position: absolute;
+            top: 50%; /* Position relative to container center */
+            left: 50%; /* Position relative to container center */
+            width: 15px; /* Smaller size */
+            height: 15px;
+            border-radius: 50%;
+            background-color: rgba(129, 140, 248, 0.5); /* Indigo-300 with opacity */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            z-index: 1; /* Below main icons and center */
+            transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+            will-change: transform, opacity;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .small-icon svg {
+            width: 8px;
+            height: 8px;
+        }
+
+        /* Disrupted state for small icons */
+        .small-icon.disrupted {
+            transform: scale(0) !important; /* Override animation transform */
+            opacity: 0 !important;
+        }
+
+
+        @keyframes rotateCenter {
+            0% { transform: translate(-50%, -50%) scale(1.0); }
+            50% { transform: translate(-50%, -50%) scale(1.05); }
+            100% { transform: translate(-50%, -50%) scale(1.0); }
+        }
+
+        .feature-orbit-center.rotate {
+            animation: rotateCenter 0.6s ease-in-out;
+        }
+
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900">
+    <div class="feature-orbit-container" id="orbit-container">
+        <div class="feature-orbit-center" id="orbit-center">
+        </div>
+
+        <div class="feature-orbit-item" data-feature="dashboard">
+             <svg class="feature-orbit-icon" style="color: #ff4500;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+        </div>
+        <div class="feature-orbit-item" data-feature="ui">
+             <svg class="feature-orbit-icon" style="color: #ffd700;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M10 3L8.84 7.33 5 8.21l3.16 2.5.19 3.96L12 13.4l3.65 1.27.19-3.96L19 8.21l-3.84-.88L14 3l-1.16 4.33L10 3zm4.79 10.88l-1.13 4.33L12 19.4l-1.66-1.19-1.13-4.33 3.79-.88 3.79.88zM5.16 14.21l.19 3.96L9 19.4l-1.66-1.19L5.16 14.21zm13.68 0l-2.18 3.96L15 19.4l.19-3.96 3.65-1.23z"/></svg>
+        </div>
+        <div class="feature-orbit-item" data-feature="streaks">
+             <svg class="feature-orbit-icon" style="color: #00ffff;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+        </div>
+        <div class="feature-orbit-item" data-feature="vibes">
+             <svg class="feature-orbit-icon" style="color: #32cd32;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+        </div>
+        <div class="feature-orbit-item" data-feature="quickadd">
+             <svg class="feature-orbit-icon" style="color: #ff00ff;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 10 20 15 15 20"></polyline><path d="M4 4v7a4 4 0 0 0 4 4h12"></path></svg>
+        </div>
+        <div class="feature-orbit-item" data-feature="reflection">
+             <svg class="feature-orbit-icon" style="color: #ff69b4;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5zM12 6a6.48 6.48 0 0 0-6 6.48c0 .79.14 1.56.4 2.28l-.46 1.37L4.1 19.9l3.77-1.26a6.48 6.48 0 0 0 7.66 0L19.3 19.9l-1.84-3.77.46-1.37A6.48 6.48 0 0 0 12 6zm1.88 6.13l-1.4 1.41-1.4-1.41a1.93 1.93 0 0 0-2.72 0 1.94 1.94 0 0 0 0 2.72l4.12 4.12 4.12-4.12a1.94 1.94 0 0 0 0-2.72 1.93 1.93 0 0 0-2.72 0z"></path></svg>
+        </div>
+        <div class="feature-orbit-item" data-feature="eastereggs">
+             <svg class="feature-orbit-icon" style="color:#40e0d0;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M6 3h12l4 6-10 12L2 9l4-6zm1.8 2L4.5 9h15L16.2 5H7.8zM12 10.5l6.4 7.5H5.6L12 10.5z"></path></svg>
+        </div>
+        <div class="feature-orbit-item" data-feature="widgets">
+             <svg class="feature-orbit-icon" style="color:#ff8c00;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        </div>
+
+        <div id="small-icon-container">
+            </div>
+    </div>
+
+    <script>
+        const orbitContainer = document.getElementById('orbit-container');
+        const orbitCenter = document.getElementById('orbit-center');
+        const orbitItems = document.querySelectorAll('.feature-orbit-item');
+        const smallIconContainer = document.getElementById('small-icon-container');
+
+        let orbitRadius = 0;
+        let innerRadius = 0; // Radius for small icon movement boundary
+        let animationFrameId = null;
+        const rotationSpeed = 0.0005;
+
+        const defaultTitle = "Classcheck.in";
+        const defaultSubtitle = "Explore the Features";
+
+        const NUM_SMALL_ICONS = 6;
+        const SMALL_ICON_SPEED = 0.5; // Pixels per frame
+        const smallIcons = []; // Array to hold small icon data
+
+        // Simple SVG shapes for small icons
+        const smallIconSVGs = [
+            // Circle
+            `<svg viewBox="0 0 10 10" fill="#f87171"><circle cx="5" cy="5" r="5"/></svg>`,
+            // Square
+            `<svg viewBox="0 0 10 10" fill="#fbbf24"><rect width="10" height="10"/></svg>`,
+            // Triangle
+            `<svg viewBox="0 0 10 10" fill="#34d399"><polygon points="5 0, 10 10, 0 10"/></svg>`,
+            // Star
+            `<svg viewBox="0 0 24 24" fill="#60a5fa"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`,
+             // Hexagon
+            `<svg viewBox="0 0 24 24" fill="#a78bfa"><path d="M17.2 3H6.8l-3.6 6.24v7.52l3.6 6.24h10.4l3.6-6.24v-7.52L17.2 3z"/></svg>`,
+             // Diamond
+            `<svg viewBox="0 0 10 10" fill="#f472b6"><polygon points="5 0, 10 5, 5 10, 0 5"/></svg>`
+        ];
+
+        function getFeatureTitle(feature) {
+             switch (feature) {
+                case "dashboard": return "Personal Dashboard";
+                case "ui": return "Aesthetic UI";
+                case "streaks": return "Streaks & Motivation";
+                case "vibes": return "Study Vibes";
+                case "quickadd": return "Quick Add";
+                case "reflection": return "Daily Reflection";
+                case "eastereggs": return "Easter Eggs";
+                case "widgets": return "Widgets";
+                default: return defaultTitle;
+            }
+        }
+
+        function getFeatureSubtitle(feature) {
+             switch (feature) {
+                case "dashboard": return "Your space: tasks, events, mood & more.";
+                case "ui": return "Customize themes, enjoy smooth visuals.";
+                case "streaks": return "Build habits, stay motivated, feel rewarded.";
+                case "vibes": return "Focus sounds, timers & mood themes.";
+                case "quickadd": return "Add tasks, notes & timers instantly.";
+                case "reflection": return "Track mood, journal thoughts, build awareness.";
+                case "eastereggs": return "Fun surprises & interactions that delight.";
+                case "widgets": return "See key info at a glance on your screen.";
+                default: return defaultSubtitle;
+            }
+        }
+
+        function updateCenterText(title, subtitle) {
+            const displayTitle = typeof title === 'string' ? title : defaultTitle;
+            const displaySubtitle = typeof subtitle === 'string' ? subtitle : defaultSubtitle;
+            orbitCenter.innerHTML = `
+                <div class="feature-orbit-center-title">${displayTitle}</div>
+                <p class="feature-orbit-subtitle">${displaySubtitle}</p>
+            `;
+        }
+
+        function setItemTransform(item, x, y, scale = 1) {
+            const validScale = typeof scale === 'number' && !isNaN(scale) ? scale : 1;
+            // Ensure transform is applied relative to the container's center (50%, 50%)
+            item.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px) scale(${validScale})`;
+        }
+
+        function calculateRadii() {
+            if (orbitCenter.offsetWidth === 0) return false;
+            const centerRadius = orbitCenter.offsetWidth / 2;
+            const itemRadius = orbitItems[0] ? orbitItems[0].offsetWidth / 2 : 35;
+            const gap = 15;
+            orbitRadius = centerRadius + itemRadius + gap;
+            innerRadius = centerRadius - 10; // Boundary for small icons, slightly inside center circle
+            return true;
+        }
+
+        function initializeSmallIcons() {
+            smallIconContainer.innerHTML = ''; // Clear previous icons if any
+            smallIcons.length = 0; // Clear the array
+
+            for (let i = 0; i < NUM_SMALL_ICONS; i++) {
+                const element = document.createElement('div');
+                element.classList.add('small-icon');
+                element.innerHTML = smallIconSVGs[i % smallIconSVGs.length]; // Cycle through SVGs
+
+                const angle = Math.random() * 2 * Math.PI;
+                const radius = Math.random() * innerRadius;
+                const x = radius * Math.cos(angle);
+                const y = radius * Math.sin(angle);
+
+                const velocityAngle = Math.random() * 2 * Math.PI;
+                const dx = Math.cos(velocityAngle) * SMALL_ICON_SPEED;
+                const dy = Math.sin(velocityAngle) * SMALL_ICON_SPEED;
+
+                smallIcons.push({ element, x, y, dx, dy });
+                smallIconContainer.appendChild(element);
+                setItemTransform(element, x, y); // Set initial position via transform
+            }
+             addSmallIconListeners(); // Add listeners after creating icons
+        }
+
+        function calculateInitialPositions() {
+             if (!calculateRadii()) {
+                setTimeout(calculateInitialPositions, 100);
+                return;
+            }
+            const itemCount = orbitItems.length;
+            const angleIncrement = (2 * Math.PI) / itemCount;
+
+            orbitItems.forEach((item, index) => {
+                const angle = index * angleIncrement - Math.PI / 2;
+                item.dataset.initialAngle = angle;
+                item.dataset.targetScale = 1;
+                // Position calculation is now handled in the animation loop
+            });
+
+            initializeSmallIcons(); // Create and position small icons
+        }
+
+        function animateOrbit(timestamp) {
+            const currentGlobalAngle = (timestamp * rotationSpeed) % (2 * Math.PI);
+
+            // Animate main feature icons
+            orbitItems.forEach(item => {
+                const initialAngle = parseFloat(item.dataset.initialAngle);
+                const targetScale = parseFloat(item.dataset.targetScale) || 1;
+                if (!isNaN(initialAngle)) {
+                    const newAngle = initialAngle + currentGlobalAngle;
+                    const x = orbitRadius * Math.cos(newAngle);
+                    const y = orbitRadius * Math.sin(newAngle);
+                    // Apply transform relative to container center
+                    setItemTransform(item, x, y, targetScale);
+                }
+            });
+
+            // Animate small icons
+            smallIcons.forEach(icon => {
+                if (icon.element.classList.contains('disrupted')) return; // Skip disrupted icons
+
+                icon.x += icon.dx;
+                icon.y += icon.dy;
+
+                // Boundary collision detection (simple circle boundary)
+                const distanceFromCenter = Math.sqrt(icon.x * icon.x + icon.y * icon.y);
+                if (distanceFromCenter > innerRadius) {
+                    // Reflect velocity vector (simplified reflection)
+                    const normalX = icon.x / distanceFromCenter;
+                    const normalY = icon.y / distanceFromCenter;
+                    const dotProduct = icon.dx * normalX + icon.dy * normalY;
+                    icon.dx -= 2 * dotProduct * normalX;
+                    icon.dy -= 2 * dotProduct * normalY;
+
+                    // Adjust position slightly to prevent getting stuck outside boundary
+                    icon.x = normalX * innerRadius;
+                    icon.y = normalY * innerRadius;
+                }
+
+                // Apply transform relative to container center
+                 setItemTransform(icon.element, icon.x, icon.y);
+            });
+
+
+            animationFrameId = requestAnimationFrame(animateOrbit);
+        }
+
+         function resetSmallIcon(icon) {
+            icon.element.classList.remove('disrupted');
+            const angle = Math.random() * 2 * Math.PI;
+            const radius = Math.random() * innerRadius;
+            icon.x = radius * Math.cos(angle);
+            icon.y = radius * Math.sin(angle);
+
+            const velocityAngle = Math.random() * 2 * Math.PI;
+            icon.dx = Math.cos(velocityAngle) * SMALL_ICON_SPEED;
+            icon.dy = Math.sin(velocityAngle) * SMALL_ICON_SPEED;
+
+            setItemTransform(icon.element, icon.x, icon.y); // Set new position immediately
+        }
+
+
+        function addMainIconListeners() {
+             orbitItems.forEach(item => {
+                item.addEventListener('mouseenter', () => {
+                    const feature = item.dataset.feature;
+                    const title = getFeatureTitle(feature);
+                    const subtitle = getFeatureSubtitle(feature);
+                    updateCenterText(title, subtitle);
+                    orbitContainer.classList.add('is-hovering');
+                    orbitItems.forEach(sibling => {
+                        if (sibling === item) {
+                            sibling.dataset.targetScale = 1.2;
+                            sibling.classList.add('hover-target');
+                        } else {
+                            sibling.dataset.targetScale = 0.9;
+                            sibling.classList.remove('hover-target');
+                        }
+                    });
+                });
+
+                item.addEventListener('mouseleave', () => {
+                    updateCenterText(defaultTitle, defaultSubtitle);
+                    orbitContainer.classList.remove('is-hovering');
+                    orbitItems.forEach(anyItem => {
+                        anyItem.dataset.targetScale = 1;
+                        anyItem.classList.remove('hover-target');
+                    });
+                });
+
+                item.addEventListener('click', () => {
+                    const feature = item.dataset.feature;
+                    console.log(`Clicked on feature: ${feature}`);
+                    item.classList.add('active');
+                    updateCenterText(getFeatureTitle(feature), getFeatureSubtitle(feature));
+                    if ("vibrate" in navigator) navigator.vibrate(50);
+                    orbitCenter.classList.add('rotate');
+                    setTimeout(() => orbitCenter.classList.remove('rotate'), 600);
+                    setTimeout(() => {
+                        item.classList.remove('active');
+                        const currentScale = item.matches(':hover') ? 1.2 : 1;
+                        item.dataset.targetScale = currentScale;
+                        if (!item.matches(':hover')) {
+                             updateCenterText(defaultTitle, defaultSubtitle);
+                             orbitItems.forEach(anyItem => {
+                                if (anyItem !== item) anyItem.dataset.targetScale = 1;
+                             });
+                        }
+                    }, 300);
+                });
+            });
+        }
+
+        function addSmallIconListeners() {
+            smallIcons.forEach(icon => {
+                icon.element.addEventListener('click', () => {
+                    icon.element.classList.add('disrupted');
+                     if ("vibrate" in navigator) navigator.vibrate(20); // Shorter vibrate
+
+                    // Reset the icon after the disruption animation (300ms)
+                    setTimeout(() => {
+                       resetSmallIcon(icon);
+                    }, 300);
+                });
+            });
+        }
+
+
+        function addGlobalListeners() {
+             let resizeTimeout;
+             window.addEventListener('resize', () => {
+                 if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                 clearTimeout(resizeTimeout);
+                 resizeTimeout = setTimeout(() => {
+                     // Recalculate radii and re-initialize all positions
+                     if(calculateRadii()) {
+                         calculateInitialPositions(); // This now also re-initializes small icons
+                         if (!document.hidden) {
+                             animationFrameId = requestAnimationFrame(animateOrbit);
+                         }
+                     } else {
+                          // Handle case where center might still be 0 width
+                           console.warn("Resize failed, center dimensions not ready.");
+                     }
+
+                 }, 250);
+             });
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    if (animationFrameId) {
+                         cancelAnimationFrame(animationFrameId);
+                         animationFrameId = null;
+                    }
+                } else {
+                    if (!animationFrameId) {
+                        // Make sure radii are calculated before restarting
+                        if(orbitRadius > 0 || calculateRadii()) {
+                             animationFrameId = requestAnimationFrame(animateOrbit);
+                        } else {
+                             console.warn("Visibility change restart failed, radii not ready.");
+                             // Attempt to init again if radii weren't ready
+                             init();
+                        }
+                    }
+                }
+            });
+        }
+
+        function init() {
+            updateCenterText(defaultTitle, defaultSubtitle);
+            calculateInitialPositions(); // Calculates radii and initializes both icon types
+            addMainIconListeners(); // Listeners for main feature icons
+            // Small icon listeners are added within initializeSmallIcons
+            addGlobalListeners(); // Resize and visibility listeners
+
+            if (!document.hidden && (orbitRadius > 0 || calculateRadii())) {
+                 animationFrameId = requestAnimationFrame(animateOrbit);
+            } else if (orbitRadius === 0) {
+                 console.warn("Initial animation start delayed, radii not ready.");
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+
+    </script>
+</body>
+</html>
